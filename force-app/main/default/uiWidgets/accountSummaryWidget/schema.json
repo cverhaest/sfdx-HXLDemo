@@ -1,0 +1,22 @@
+{
+  "title": "Account Summary Card",
+  "description": "Displays an account's name as the card header and its generated summary in the body.",
+  "type": "object",
+  "properties": {
+    "attributes": {
+      "lightning:type": "lightning__objectType",
+      "properties": {
+        "accountName": {
+          "title": "Account Name",
+          "description": "The account name shown as the card header.",
+          "lightning:type": "lightning__textType"
+        },
+        "summary": {
+          "title": "Summary",
+          "description": "The generated summary of the account shown in the card body.",
+          "lightning:type": "lightning__textType"
+        }
+      }
+    }
+  }
+}

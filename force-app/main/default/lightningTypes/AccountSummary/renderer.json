@@ -1,0 +1,13 @@
+{
+  "renderer": {
+    "componentOverrides": {
+      "$": {
+        "definition": "@widget/c/accountSummaryWidget",
+        "attributes": {
+          "accountName": "{!$attrs.accountName}",
+          "summary": "{!$attrs.summary}"
+        }
+      }
+    }
+  }
+}

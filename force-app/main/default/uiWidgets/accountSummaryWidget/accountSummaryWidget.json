@@ -1,0 +1,40 @@
+{
+  "type": "lightning__agentforceWidget",
+  "contentBody": {
+    "widgetBody": {
+      "definition": "tile/widget",
+      "children": [
+        {
+          "definition": "tile/column",
+          "attributes": { "gap": "md" },
+          "children": [
+            {
+              "definition": "tile/container",
+              "attributes": { "variant": "default" },
+              "children": [
+                {
+                  "definition": "tile/column",
+                  "attributes": { "gap": "sm" },
+                  "children": [
+                    {
+                      "definition": "tile/text",
+                      "attributes": { "text": "{!$attrs.accountName}", "variant": "h2", "weight": "bold" }
+                    },
+                    {
+                      "definition": "tile/separator",
+                      "attributes": { "orientation": "horizontal" }
+                    },
+                    {
+                      "definition": "tile/text",
+                      "attributes": { "text": "{!$attrs.summary}", "variant": "body" }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

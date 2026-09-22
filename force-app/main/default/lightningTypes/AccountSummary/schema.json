@@ -1,0 +1,5 @@
+{
+  "title": "Account Summary",
+  "description": "Typed payload carrying an account's name and a generated summary, rendered as a card.",
+  "lightning:type": "@apexClassType/c__AccountSummary"
+}
