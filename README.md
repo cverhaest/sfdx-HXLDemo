@@ -1,58 +1,137 @@
-# Salesforce DX Project
+# sfdx-HXLDemo — HXL Widget rendering demo
 
-Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
+Démonstration du rendu d'un widget **HXL** (Hypertext Lightning) dans deux surfaces :
 
-This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
+| Surface | Invocateur | Chemin de rendu |
+|---|---|---|
+| **Conversation Agentforce** | Employee Agent (Reasoning Engine) | Lightning Type `AccountSummary` → renderer → widget |
+| **Agent externe (Claude Desktop)** | Serveur MCP `CVERMCPServer` | Lightning Type `AccountSummaryResult` → renderer → widget |
 
-## Prerequisites
+Dans les deux cas, le résultat final est une **carte bordée** affichant le nom du compte en gras et le résumé généré par IA dans le corps.
 
-Before you start, make sure you have:
+---
 
-- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
-- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
-- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
-- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
+## Ce que fait le projet
 
-## Project Structure
+### Fonctionnalité principale
 
-Your DX project follows this structure:
+L'action `AccountSummaryAction` génère un résumé en langage naturel d'un compte Salesforce :
 
-- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
-- **`config/`** - Scratch org definitions and project settings
-- **`scripts/`** - Automation scripts for common tasks
-- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
+1. Reçoit un `accountId` en entrée
+2. Interroge le nom du compte (`SELECT Id, Name FROM Account WITH USER_MODE`)
+3. Invoque le **Prompt Template** `Account_Record_Summary_Prompt_Templace` via `ConnectApi.EinsteinLLM`
+4. Retourne un payload `AccountSummary { accountName, summary }`
 
-See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
+Ce payload est rendu sous forme de carte HXL dans la conversation — et non comme narration texte — grâce aux Custom Lightning Types et au widget HXL.
 
-## Get Started
+---
 
-Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
+## Architecture
 
-## Common Salesforce CLI Commands
+### Artefacts clés
 
-Here are common CLI commands that you'll use the most:
+```
+classes/
+  AccountSummary.cls                    DTO Apex (@AuraEnabled : accountName, summary)
+  AccountSummaryAction.cls              Action invocable (@InvocableMethod) + outil MCP global
 
-- `sf org login web`: Authorize an org
-- `sf org open`: Open your org in a browser
-- `sf org create scratch`: Create a scratch org
-- `sf project deploy start`: Deploy metadata to your org
-- `sf project retrieve start`: Retrieve metadata from your org
-- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
-- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
-- `sf data <command>`: Work with test data
-- `sf alias <command>`: Manage org aliases
-- `sf config <command>`: Configure CLI settings
+lightningTypes/
+  AccountSummary/                       Lightning Type pour le chemin Agentforce natif
+    schema.json                           lightning:type = @apexClassType/c__AccountSummary
+    renderer.json                         → @widget/c/accountSummaryWidget (attrs directs)
 
-## Use Agentforce Vibes to Build Lightning Apps
+  AccountSummaryResult/                 Lightning Type pour le chemin agent externe (MCP)
+    schema.json                           enveloppe top-level { actionName, isSuccess, outputValues }
+    renderer.json                         → @widget/c/accountSummaryWidget (via outputValues.accountSummary.*)
 
-Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
+  AccountSummaryOutputValues/           Type intermédiaire : forme du champ outputValues
+    schema.json                           { accountSummary: @apexClassType/c__AccountSummary }
 
-## Additional Resources
+uiWidgets/
+  accountSummaryWidget/
+    accountSummaryWidget.json           Markup HXL : tile/container + tile/text (h2 bold) + tile/separator + tile/text (body)
+    schema.json                         Déclaration des attributs accountName et summary
 
-- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
-- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
-- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
-- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
+mcpServerDefinitions/
+  CVERMCPServer.mcpServerDefinition-meta.xml
+                                        Serveur MCP custom exposant AccountSummaryAction,
+                                        un Flow de classification de sentiments,
+                                        et un Prompt Template de documentation.
+                                        Lie l'outil AccountSummaryAction à la ressource UI
+                                        ui://widget/lightningType/c__AccountSummaryResult
+```
 
+### Les deux chemins de rendu
+
+**Chemin Agentforce natif**
+- L'action est configurée dans l'agent avec `Output Rendering = AccountSummary` (le Lightning Type bundle)
+- Le renderer lit les attributs directement : `{!$attrs.accountName}`, `{!$attrs.summary}`
+
+**Chemin agent externe (Claude Desktop / MCP)**
+- L'action est exposée comme outil MCP via `CVERMCPServer`
+- Le serveur MCP enveloppe la réponse Apex dans `{ actionName, isSuccess, outputValues: { accountSummary: {...} } }`
+- La balise `<uiResource>accountSummary</uiResource>` dans la définition de l'outil + le bloc `<resources>` pointant vers `ui://widget/lightningType/c__AccountSummaryResult` déclenchent le rendu HXL
+- Le renderer lit les attributs via le chemin d'enveloppe : `{!$attrs.outputValues.accountSummary.accountName}`
+
+> Documentation détaillée dans [`docs/`](docs/).
+
+---
+
+## Org cible
+
+| Champ | Valeur |
+|---|---|
+| Username | `cverhaest@datacloud.demo` |
+| Alias SF CLI | `cverhaest@datacloud.demo` |
+| Instance URL | `https://d7q00000cjailua1.my.salesforce.com` |
+
+---
+
+## Déploiement
+
+```bash
+# Déployer tous les métadonnées sur l'org
+sf project deploy start --target-org cverhaest@datacloud.demo
+
+# Vérifier le statut
+sf project deploy report
+```
+
+Après déploiement, activer `CVERMCPServer` dans **Setup → Hosted MCP Servers** si ce n'est pas déjà fait.
+
+---
+
+## Claude Desktop — Rafraîchir le token MCP
+
+Le token Bearer du serveur MCP expire après ~12h. Pour le renouveler sans copier-coller manuel :
+
+```bash
+python3 ~/.claude/scripts/sf-mcp-auth.py
+```
+
+Le script :
+1. Ouvre le navigateur sur le flux OAuth PKCE de l'org `datacloud.demo`
+2. Attend le callback sur `localhost:8085`
+3. Récupère le nouveau token
+4. Met à jour directement `~/Library/Application Support/Claude/claude_desktop_config.json` (entrée `salesforce-hxl-cvermcp`)
+5. Crée un backup `.json.bak` avant toute modification
+
+**Après le script : relancer Claude Desktop** pour que le nouveau token soit pris en compte.
+
+### External Client App (OAuth)
+
+| Champ | Valeur |
+|---|---|
+| Consumer Key | `3MVG9t0sl2P.pBypq7yBumI7wVVFX3NTIG6zfoLVql5EbCx.s4aF3czW6RXys7rUn60cEpbiMKJPXFAlSyI5B` |
+| Callback URL | `http://localhost:8085/callback` |
+| Scopes | `mcp_api refresh_token` |
+| Méthode | PKCE obligatoire (`code_challenge_method=S256`) |
+
+---
+
+## Documentation
+
+| Fichier | Contenu |
+|---|---|
+| [`docs/HXL-widget-rendering-summary.md`](docs/HXL-widget-rendering-summary.md) | Diagramme de séquence — chemin Agentforce natif |
+| [`docs/HXL-widget-rendering-external-agent.md`](docs/HXL-widget-rendering-external-agent.md) | Diagramme de séquence — chemin agent externe (Claude Desktop / MCP) |
