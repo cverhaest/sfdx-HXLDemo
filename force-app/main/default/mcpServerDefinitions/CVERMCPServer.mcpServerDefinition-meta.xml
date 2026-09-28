@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<McpServerDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>@CVER Org Data Cloud MCP Server</description>
+    <masterLabel>CVER MCP Server</masterLabel>
+    <tools>
+        <apiDefinition>
+            <apiIdentifier>pr:Retrieve_Google_Drive_Documentation_Multilingual_Prompt_Template</apiIdentifier>
+            <apiSource>API_CATALOG</apiSource>
+            <operation>Retrieve_Google_Drive_Documentation_Multilingual_Prompt_Template</operation>
+        </apiDefinition>
+        <descriptionOverride>Retrieve_Google_Drive_Documentation_Multilingual_Prompt_Template</descriptionOverride>
+        <destructive>false</destructive>
+        <idempotent>false</idempotent>
+        <openWorld>false</openWorld>
+        <readOnly>true</readOnly>
+        <returnDirect>false</returnDirect>
+        <toolName>Retrieve_Google_Drive_Documentation_Multilingual_Prompt_Templat</toolName>
+        <toolTitle>Retrieve Google Drive Documentation Multilingual Prompt Template</toolTitle>
+    </tools>
+    <tools>
+        <apiDefinition>
+            <apiIdentifier>fa:flow-Account_Case_Sentiment_Classification_Flow</apiIdentifier>
+            <apiSource>API_CATALOG</apiSource>
+            <operation>Account_Case_Sentiment_Classification_Flow</operation>
+        </apiDefinition>
+        <descriptionOverride>@CVER Account Case Sentiment Classification</descriptionOverride>
+        <destructive>false</destructive>
+        <idempotent>false</idempotent>
+        <openWorld>false</openWorld>
+        <readOnly>false</readOnly>
+        <returnDirect>false</returnDirect>
+        <toolName>Account_Case_Sentiment_Classification_Flowflow_Account_Case_Sen</toolName>
+        <toolTitle>Account_Case_Sentiment_Classification_Flow</toolTitle>
+    </tools>
+    <tools>
+        <apiDefinition>
+            <apiIdentifier>aa:apex-AccountSummaryAction</apiIdentifier>
+            <apiSource>API_CATALOG</apiSource>
+            <operation>AccountSummaryAction</operation>
+        </apiDefinition>
+        <descriptionOverride>Summarizes an Account using the Account Record Summary prompt template and returns an AccountSummary.</descriptionOverride>
+        <destructive>false</destructive>
+        <idempotent>false</idempotent>
+        <openWorld>false</openWorld>
+        <readOnly>false</readOnly>
+        <returnDirect>false</returnDirect>
+        <toolName>AccountSummaryActionapex_AccountSummaryAction</toolName>
+        <toolTitle>AccountSummaryAction</toolTitle>
+        <uiResource>accountSummary</uiResource>
+    </tools>
+
+    <resources>
+        <resourceName>accountSummary</resourceName>
+        <resourceUri>ui://widget/lightningType/c__AccountSummaryResult</resourceUri>
+        <resourceTitle>Account Summary CLT Resource</resourceTitle>
+        <description>Backs the widget-referencing CLT (c__AccountSummaryResult) for the API_CATALOG/Apex-Invocable apiSource path; renderer json references @widget/c/AccountSummaryWidget with $attrs.outputValues.accountSummary.* bindings</description>
+    </resources>
+</McpServerDefinition>

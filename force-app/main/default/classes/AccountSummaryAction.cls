@@ -4,7 +4,13 @@
  * the result as an {@link AccountSummary} payload — the Apex type that backs the
  * AccountSummary Custom Lightning Type.
  */
-public with sharing class AccountSummaryAction {
+
+ /*
+ * Expose Custom Apex as a Hosted MCP Tool for Agents
+ * https://developer.salesforce.com/blogs/2026/05/expose-custom-apex-as-a-hosted-mcp-tool-for-agents
+ * The Apex class uses global access (required for MCP tool discovery)
+ */
+global with sharing class AccountSummaryAction {
     /**
      * Developer name of the prompt template invoked by this action.
      */
@@ -21,7 +27,7 @@ public with sharing class AccountSummaryAction {
     /**
      * Input for the invocable action: the Account to summarize.
      */
-    public class Request {
+    global class Request {
         @InvocableVariable(
             label='Account ID'
             description='Id of the Account to summarize.'
@@ -34,7 +40,7 @@ public with sharing class AccountSummaryAction {
      * Output of the invocable action: the generated Account summary payload,
      * mapped to the AccountSummary Custom Lightning Type by Agentforce.
      */
-    public class Response {
+    global class Response {
         @InvocableVariable(
             label='Account Summary'
             description='Generated account summary (account name + summary text).'
@@ -45,7 +51,7 @@ public with sharing class AccountSummaryAction {
     /**
      * Domain exception for account-summary generation failures.
      */
-    public class AccountSummaryActionException extends Exception {}
+    global class AccountSummaryActionException extends Exception {}
 
     /**
      * Generates an Account summary for each request by calling the
@@ -65,7 +71,7 @@ public with sharing class AccountSummaryAction {
         description='Summarizes an Account using the Account Record Summary prompt template and returns an AccountSummary.'
         category='Agentforce'
     )
-    public static List<Response> summarizeAccounts(List<Request> requests) {
+    global static List<Response> summarizeAccounts(List<Request> requests) {
         List<Response> responses = new List<Response>();
         if (requests == null || requests.isEmpty()) {
             return responses;

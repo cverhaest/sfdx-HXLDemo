@@ -1,0 +1,14 @@
+{
+  "title" : "Account Summary Output Values",
+  "description" : "Payload fields from the AccountSummary response",
+  "type": "object",
+  "lightning:type": "lightning__objectType",
+  "unevaluatedProperties": false,
+  "lightning:tags": ["mcp"],
+  "properties": {
+    "accountSummary": {
+      "title": "Account Summary",
+      "lightning:type": "@apexClassType/c__AccountSummary"
+    }
+  }
+}
