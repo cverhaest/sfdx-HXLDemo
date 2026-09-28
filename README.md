@@ -106,7 +106,7 @@ Après déploiement, activer `CVERMCPServer` dans **Setup → Hosted MCP Servers
 Le token Bearer du serveur MCP expire après ~12h. Pour le renouveler sans copier-coller manuel :
 
 ```bash
-python3 ~/.claude/scripts/sf-mcp-auth.py
+python3 scripts/sf-mcp-auth.py
 ```
 
 Le script :
