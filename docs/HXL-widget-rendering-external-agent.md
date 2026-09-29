@@ -5,6 +5,16 @@ externe** (ex. Claude Desktop via le serveur MCP `invocable-actions`), de rendre
 résultat sous forme de **carte HXL** — même rendu visuel qu'en conversation Agentforce,
 mais le chemin d'assemblage est différent.
 
+## Illustration
+
+![Rendu du widget HXL dans Claude Desktop](images/hxl-claude-desktop.png)
+
+La carte HXL s'affiche dans **Claude Desktop** (modèle Opus 5.5) après un appel à
+l'outil `AccountSummaryActionapex_AccountSummaryAction` via le connecteur
+`salesforce-hxl-cvermcp` (visible dans le panneau Context à droite) : même rendu
+visuel qu'en conversation Agentforce — titre "Alexis Dupont" en gras, séparateur,
+corps du résumé.
+
 ## Diagramme de séquence
 
 ```mermaid

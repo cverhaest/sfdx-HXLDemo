@@ -4,6 +4,14 @@ Résumé du flux qui permet à l'action `AccountSummaryAction` de rendre son ré
 sous forme de **carte HXL** (nom du compte en gras + séparateur + corps du résumé),
 au lieu d'une simple narration texte.
 
+## Illustration
+
+![Rendu du widget HXL dans une conversation Agentforce](images/hxl-agentforce.png)
+
+La carte HXL s'affiche dans le panneau **Architects Employee Agent** (à droite de la
+page Data 360) : titre "Alexis Dupont" en gras, séparateur horizontal, puis le corps
+du résumé généré par le prompt template.
+
 ## Diagramme de séquence
 
 ```mermaid
