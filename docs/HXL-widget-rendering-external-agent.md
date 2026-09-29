@@ -1,9 +1,38 @@
 # Rendu d'un widget HXL dans une conversation d'agent externe (Claude Desktop)
 
 Résumé du flux qui permet à l'action `AccountSummaryAction`, appelée depuis un **agent
-externe** (ex. Claude Desktop via le serveur MCP `invocable-actions`), de rendre son
+externe** (ex. Claude Desktop via le serveur MCP `CVERMCPServer`), de rendre son
 résultat sous forme de **carte HXL** — même rendu visuel qu'en conversation Agentforce,
 mais le chemin d'assemblage est différent.
+
+## Standard sous-jacent : MCP Apps (SEP-1865)
+
+Le rendu inline du widget repose sur **MCP Apps**, une extension ouverte du protocole
+MCP publiée par Anthropic (SEP-1865). Ce n'est pas une spécification Salesforce
+propriétaire : Anthropic l'a lancée avec une liste de partenaires (Slack, Asana, Box,
+Canva, Figma, monday.com…), Salesforce figurant parmi eux.
+
+MCP Apps ajoute au protocole MCP la capacité `ui://` :
+- le **serveur** déclare des ressources UI (`ui://` templates) attachées à ses outils
+- le **client** négocie cette capacité à l'initialisation et rend le contenu inline au
+  lieu de retourner du texte/JSON brut
+
+Ce que fait Salesforce, c'est **se conformer à MCP Apps côté serveur** : le
+`CVERMCPServer` expose la ressource `ui://widget/lightningType/c__AccountSummaryResult`
+via ce canal standard. Claude Desktop implémente MCP Apps côté client et effectue le
+rendu natif.
+
+```
+MCP (protocole de base)         ← Anthropic, open standard
+    ↓ extension
+MCP Apps / SEP-1865             ← Anthropic, open — capacité ui://
+    ↓ conformité côté serveur
+Salesforce HXL                  ← ui://widget/lightningType/... + tile/* primitives
+    ↓ rendu côté client
+Claude Desktop                  ← implémente MCP Apps, rend inline
+```
+
+Tout client qui implémente MCP Apps peut rendre ces widgets — pas seulement Claude Desktop.
 
 ## Illustration
 
@@ -31,10 +60,12 @@ sequenceDiagram
     participant Renderer as renderer.json<br/>(AccountSummaryResult)
     participant Widget as uiWidget<br/>@widget/c/accountSummaryWidget
 
+    Note over Claude,MCPDef: Initialisation MCP : Claude négocie la capacité<br/>MCP Apps (SEP-1865) — le serveur confirme le support ui://
+
     User->>Claude: Demande un résumé de compte
     Claude->>MCP: Appelle l'outil MCP AccountSummaryAction (accountId)
 
-    Note over MCPDef,MCP: Au moment de l'appel, le runtime consulte<br/>CVERMCPServer : l'outil porte <uiResource>accountSummary</uiResource>
+    Note over MCPDef,MCP: Le runtime consulte CVERMCPServer :<br/>l'outil porte <uiResource>accountSummary</uiResource>
 
     MCP->>Apex: summarizeAccounts(requests)
     Apex->>Apex: SELECT Id, Name FROM Account (WITH USER_MODE)
@@ -56,7 +87,8 @@ sequenceDiagram
 
 | | Flux Agentforce (natif) | Flux agent externe (MCP) |
 |---|---|---|
-| **Invocateur** | Reasoning Engine (Employee Agent) | Agent externe via serveur MCP `invocable-actions` |
+| **Protocole de rendu** | Interne au Reasoning Engine | MCP Apps / SEP-1865 (standard Anthropic) |
+| **Invocateur** | Reasoning Engine (Employee Agent) | Agent externe via `CVERMCPServer` |
 | **Enveloppe retournée** | `AccountSummary` direct (`accountName`, `summary`) | `AccountSummaryResult` (enveloppe MCP : `actionName`, `isSuccess`, `outputValues`) |
 | **Lightning Type de rendu** | `AccountSummary` | `AccountSummaryResult` |
 | **Chemin attrs dans renderer.json** | `{!$attrs.accountName}` | `{!$attrs.outputValues.accountSummary.accountName}` |
@@ -100,8 +132,10 @@ retournée en JSON brut et l'agent externe la transcrit en texte.
 </resources>
 ```
 
-Le `resourceUri` utilise le schéma `ui://widget/lightningType/<nom>` pour pointer vers
-le Custom Lightning Type `AccountSummaryResult`. C'est ce type qui porte le
+Le `resourceUri` utilise le schéma `ui://` défini par **MCP Apps (SEP-1865)** — c'est
+le canal standard qu'Anthropic a ouvert pour le rendu inline. Le sous-chemin
+`widget/lightningType/<nom>` est la convention Salesforce dans ce canal, qui pointe
+vers le Custom Lightning Type `AccountSummaryResult`. C'est ce type qui porte le
 `renderer.json` — la chaîne de rendu démarre ici.
 
 > **Analogie avec le flux Agentforce :** le champ `Output Rendering` de l'agent action
@@ -194,8 +228,9 @@ uiWidgets/accountSummaryWidget/accountSummaryWidget.json
   de la surface MCP — sans ce tag, l'enveloppe n'est pas reconnue.
 - Le widget `accountSummaryWidget.json` est **partagé** entre les deux chemins ; seul le
   mapping des attributs dans le renderer change.
-- Surface de rendu : la carte HXL s'affiche dans les clients qui supportent le rendu
-  des widgets HXL (Claude Desktop avec le serveur `invocable-actions` configuré sur l'org).
-- Si le serveur MCP utilisé est `sobject-all` (CRUD/SOQL) plutôt qu'`invocable-actions`,
-  il ne passe pas par ce chemin de rendu — les résultats SOQL bruts ne déclenchent pas
-  les Lightning Types.
+- Surface de rendu : la carte HXL s'affiche dans tout client qui implémente **MCP Apps
+  (SEP-1865)** — Claude Desktop aujourd'hui, potentiellement ChatGPT, Cursor, ou tout
+  agent custom qui implémente la capacité `ui://`.
+- Si le serveur MCP utilisé est `sobject-all` (CRUD/SOQL) plutôt que `CVERMCPServer`,
+  il ne passe pas par ce chemin de rendu — les résultats SOQL bruts ne déclarent pas
+  de `uiResource` et ne déclenchent pas les Lightning Types.

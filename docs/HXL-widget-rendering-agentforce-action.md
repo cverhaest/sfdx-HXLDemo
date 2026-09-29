@@ -83,6 +83,8 @@ uiWidgets/accountSummaryWidget (schema.json + accountSummaryWidget.json)
 - Le corps `summary` est un blob texte issu du prompt template ; le structurer
   (ex. sous-cartes Sales Orders / Invoices) nécessiterait de renvoyer des données
   structurées (liste d'objets) et d'enrichir le widget en conséquence.
-- Surface de rendu : la carte HXL s'affiche dans les surfaces qui supportent le
-  rendu des widgets Agentforce.
+- Surface de rendu : la carte HXL s'affiche dans les surfaces Agentforce. Ce chemin
+  est **interne au Reasoning Engine** — il ne passe pas par MCP Apps (SEP-1865), qui
+  est le standard utilisé par les agents externes (voir
+  [`HXL-widget-rendering-external-agent.md`](HXL-widget-rendering-external-agent.md)).
 ```
