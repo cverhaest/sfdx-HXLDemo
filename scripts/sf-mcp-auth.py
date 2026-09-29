@@ -67,7 +67,7 @@ def oauth_flow():
                 self.send_response(200)
                 self.send_header("Content-type", "text/html")
                 self.end_headers()
-                self.wfile.write(b"<html><body><h2>OK \xe2\x80\x94 vous pouvez fermer cet onglet.</h2></body></html>")
+                self.wfile.write(b"<html><body><h2>OK, vous pouvez fermer cet onglet.</h2></body></html>")
                 auth_event.set()
             else:
                 self.send_response(400)
