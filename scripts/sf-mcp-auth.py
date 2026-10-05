@@ -161,7 +161,7 @@ def update_config(access_token):
 # Point d'entrée
 # ---------------------------------------------------------------------------
 def main():
-    print("\n=== Authentification Salesforce MCP — datacloud.demo ===\n")
+    print(f"\n=== Authentification Salesforce MCP — {INSTANCE_URL} ===\n")
 
     tokens = oauth_flow()
     access_token = tokens.get("access_token", "")
