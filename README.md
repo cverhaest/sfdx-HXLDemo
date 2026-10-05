@@ -79,19 +79,20 @@ mcpServerDefinitions/
 
 ## Org cible
 
-| Champ | Valeur |
+Définie dans `.env` (voir `.env.example`).
+
+| Variable | Description |
 |---|---|
-| Username | `cverhaest@datacloud.demo` |
-| Alias SF CLI | `cverhaest@datacloud.demo` |
-| Instance URL | `https://d7q00000cjailua1.my.salesforce.com` |
+| `SF_ORG_ALIAS` | Username ou alias SF CLI de l'org |
+| `SF_INSTANCE_URL` | URL d'instance (`https://<org>.my.salesforce.com`) |
 
 ---
 
 ## Déploiement
 
 ```bash
-# Déployer tous les métadonnées sur l'org
-sf project deploy start --target-org cverhaest@datacloud.demo
+# Déployer tous les métadonnées sur l'org (remplacer par la valeur de SF_ORG_ALIAS dans .env)
+sf project deploy start --target-org <SF_ORG_ALIAS>
 
 # Vérifier le statut
 sf project deploy report
