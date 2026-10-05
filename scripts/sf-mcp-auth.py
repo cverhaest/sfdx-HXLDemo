@@ -8,18 +8,38 @@ Usage (depuis la racine du projet) :
 """
 
 import http.server, webbrowser, urllib.parse, urllib.request
-import json, threading, secrets, hashlib, base64, ssl, sys, shutil
+import json, threading, secrets, hashlib, base64, ssl, sys, shutil, os
 from pathlib import Path
 
 # ---------------------------------------------------------------------------
-# Config
+# Config — lue depuis .env à la racine du projet (jamais hardcodée)
 # ---------------------------------------------------------------------------
-CLIENT_ID    = "3MVG9t0sl2P.pBypq7yBumI7wVVFX3NTIG6zfoLVql5EbCx.s4aF3czW6RXys7rUn60cEpbiMKJPXFAlSyI5B"
-INSTANCE_URL = "https://d7q00000cjailua1.my.salesforce.com"
-REDIRECT_URI = "http://localhost:8085/callback"
+def _load_env():
+    env_file = Path(__file__).parent.parent / ".env"
+    env = {}
+    if env_file.exists():
+        for line in env_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                env[k.strip()] = v.strip().strip('"').strip("'")
+    return env
 
+_env = _load_env()
+
+def _require(key):
+    val = _env.get(key) or os.environ.get(key, "")
+    if not val or val.startswith("<"):
+        print(f"ERREUR : {key} non configuré — copier .env.example en .env et renseigner la valeur.")
+        sys.exit(1)
+    return val
+
+CLIENT_ID    = _require("SF_CLIENT_ID")
+INSTANCE_URL = _require("SF_INSTANCE_URL")
+MCP_SERVER_KEY = _env.get("SF_MCP_SERVER_KEY") or os.environ.get("SF_MCP_SERVER_KEY", "salesforce-hxl-cvermcp")
+
+REDIRECT_URI   = "http://localhost:8085/callback"
 DESKTOP_CONFIG = Path.home() / "Library/Application Support/Claude/claude_desktop_config.json"
-MCP_SERVER_KEY = "salesforce-hxl-cvermcp"
 
 # ---------------------------------------------------------------------------
 # OAuth PKCE

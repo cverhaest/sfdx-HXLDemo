@@ -101,31 +101,47 @@ Après déploiement, activer `CVERMCPServer` dans **Setup → Hosted MCP Servers
 
 ---
 
+## Claude Desktop — Configuration initiale
+
+Copier `.env.example` en `.env` à la racine du projet et renseigner les valeurs :
+
+```bash
+cp .env.example .env
+# éditer .env : SF_CLIENT_ID, SF_INSTANCE_URL
+```
+
+| Variable | Description |
+|---|---|
+| `SF_CLIENT_ID` | Consumer Key de l'External Client App sur l'org |
+| `SF_INSTANCE_URL` | URL d'instance de l'org (`https://<org>.my.salesforce.com`) |
+| `SF_MCP_SERVER_KEY` | Nom du serveur dans `claude_desktop_config.json` (défaut : `salesforce-hxl-cvermcp`) |
+
+> Le fichier `.env` n'est pas commité (listé dans `.gitignore`).
+
+### External Client App — prérequis OAuth
+
+| Champ | Valeur |
+|---|---|
+| Callback URL | `http://localhost:8085/callback` |
+| Scopes | `mcp_api refresh_token` |
+| Méthode | PKCE obligatoire (`code_challenge_method=S256`) |
+
 ## Claude Desktop — Rafraîchir le token MCP
 
-Le token Bearer du serveur MCP expire après ~12h. Pour le renouveler sans copier-coller manuel :
+Le token Bearer expire après ~12h. Pour le renouveler sans copier-coller manuel :
 
 ```bash
 python3 scripts/sf-mcp-auth.py
 ```
 
 Le script :
-1. Ouvre le navigateur sur le flux OAuth PKCE de l'org `datacloud.demo`
-2. Attend le callback sur `localhost:8085`
-3. Récupère le nouveau token
-4. Met à jour directement `~/Library/Application Support/Claude/claude_desktop_config.json` (entrée `salesforce-hxl-cvermcp`)
+1. Lit `SF_CLIENT_ID` et `SF_INSTANCE_URL` depuis `.env`
+2. Ouvre le navigateur sur le flux OAuth PKCE
+3. Attend le callback sur `localhost:8085`
+4. Met à jour directement `~/Library/Application Support/Claude/claude_desktop_config.json`
 5. Crée un backup `.json.bak` avant toute modification
 
 **Après le script : relancer Claude Desktop** pour que le nouveau token soit pris en compte.
-
-### External Client App (OAuth)
-
-| Champ | Valeur |
-|---|---|
-| Consumer Key | `3MVG9t0sl2P.pBypq7yBumI7wVVFX3NTIG6zfoLVql5EbCx.s4aF3czW6RXys7rUn60cEpbiMKJPXFAlSyI5B` |
-| Callback URL | `http://localhost:8085/callback` |
-| Scopes | `mcp_api refresh_token` |
-| Méthode | PKCE obligatoire (`code_challenge_method=S256`) |
 
 ---
 
@@ -133,5 +149,5 @@ Le script :
 
 | Fichier | Contenu |
 |---|---|
-| [`docs/HXL-widget-rendering-summary.md`](docs/HXL-widget-rendering-summary.md) | Diagramme de séquence — chemin Agentforce natif |
+| [`docs/HXL-widget-rendering-agentforce-action.md`](docs/HXL-widget-rendering-agentforce-action.md) | Diagramme de séquence — chemin Agentforce natif |
 | [`docs/HXL-widget-rendering-external-agent.md`](docs/HXL-widget-rendering-external-agent.md) | Diagramme de séquence — chemin agent externe (Claude Desktop / MCP) |
